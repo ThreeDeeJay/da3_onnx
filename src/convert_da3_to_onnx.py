@@ -40,10 +40,12 @@ class DepthAnything3Wrapper(torch.nn.Module):
                     intrinsics=None,
                     export_feat_layers=[],
                     infer_gs=False,
+                    use_ray_pose=True
                 )
         
         depth = output["depth"]
-        return depth
+        ray = output["ray"]
+        return depth, ray
     
 def getArguments():
     parser = argparse.ArgumentParser(description='Replay tool for performance testing')
@@ -60,10 +62,10 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     print("Loading the model...")
-    model = DepthAnything3.from_pretrained(args.da3Model)
+    model = DepthAnything3.from_pretrained(args.da3model)
     model = model.to(device)
     model.eval()
-    print(f"Model at {args.da3Model} loaded on {device}")
+    print(f"Model at {args.da3model} loaded on {device}")
 
     print("Converting...")
     wrapper = DepthAnything3Wrapper(model).to(device)
@@ -80,7 +82,7 @@ if __name__ == "__main__":
             dummy_input,
             do_constant_folding=True,
             input_names=["image"],
-            output_names=["depth"],
+            output_names=["depth", "ray"],
             training=torch.onnx.TrainingMode.EVAL,
             dynamo=True, 
             report=True
