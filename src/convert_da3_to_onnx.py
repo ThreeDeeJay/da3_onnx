@@ -51,6 +51,8 @@ def getArguments():
     parser = argparse.ArgumentParser(description='Replay tool for performance testing')
     parser.add_argument('--da3model', type=str, help='The Depth Anything 3 model to convert. It can be a Hugging Face project identifier or a path to the downloaded model.')
     parser.add_argument('--output', type=str, help='The path where to write the ONNX model file (.onnx).')
+    parser.add_argument('--nviews', type=int, help='Number of views for the model\'s input')
+    parser.add_argument('--batchsize', type=int, help='Batch size for the model\'s input')
 
     args = parser.parse_args()
 
@@ -58,6 +60,8 @@ def getArguments():
 
 if __name__ == "__main__":
     args = getArguments()
+
+    os.environ["TORCHDYNAMO_DISABLE"] = "1"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -70,7 +74,9 @@ if __name__ == "__main__":
     print("Converting...")
     wrapper = DepthAnything3Wrapper(model).to(device)
 
-    B, N_views, C, H, W = 1, 4, 3, 280, 504
+    assert(args.batchsize > 0 and args.nviews > 0)
+
+    B, N_views, C, H, W = args.batchsize, args.nviews, 3, 280, 504
     # TODO HERE : add the others dummy inputs necessary (dummy intrinsic/extrinsic/etc tensors)
     dummy_input = torch.zeros(B, N_views, C, H, W).to(device)
 
@@ -80,18 +86,15 @@ if __name__ == "__main__":
         onnx_program = torch.onnx.export(
             wrapper,
             dummy_input,
+            args.output,
+            export_params=True,
             do_constant_folding=True,
             input_names=["image"],
-            output_names=["depth", "ray"],
-            training=torch.onnx.TrainingMode.EVAL,
-            dynamo=True, 
-            report=True
+            output_names=["depth"],
+            training=torch.onnx.TrainingMode.EVAL
         )
 
-        # save to converted model
-        onnx_program.save(args.output)
-
-    print(f"Convertion done successfully, model save at {args.output}.")
+    print(f"Convertion done successfully, model saved at {args.output}.")
 
     print("Checking the model...")
     # check the converted model

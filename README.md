@@ -23,12 +23,12 @@ Modify the convert_da3_to_onnx.py script to add the inputs and outputs you need 
 
 ## How to convert
 
-From a Hugging Face repository :
+Example from a Hugging Face repository :
 ```bash
-python3 src/convert_da3_to_onnx.py --da3model="depth-anything/DA3-SMALL" --output="da3-small.onnx"
+python3 src/convert_da3_to_onnx.py --da3model="depth-anything/DA3-Small" --output="da3-small.onnx" --nviews=2 --batchsize=1
 ```
 
-From a DA3 model on you hard drive :
+Example from a DA3 model on you hard drive :
 ```bash
-python3 src/convert_da3_to_onnx.py --da3model="../da3_small_model/" --output="da3-small.onnx"
+python3 src/convert_da3_to_onnx.py --da3model="../da3_small_model/" --output="da3-small.onnx" --nviews=2 --batchsize=1
 ```
