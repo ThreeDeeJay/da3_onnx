@@ -65,7 +65,7 @@ jobs:
 
     - name: Convert
       run: |
-        python3 src/convert_da3_to_onnx.py --da3model="../da3_${{matrix.Settings.Name}}_model/" --output="da3-${{matrix.Settings.Name}}.onnx"
+        python3 src/convert_da3_to_onnx.py --da3model="../da3_${{matrix.Settings.Name}}_model/" --output="da3-${{matrix.Settings.Name}}.onnx" --nviews=2 --batchsize=1
 #        python3 src/convert_da3_to_onnx.py --da3model="depth-anything/DA3-${{matrix.Settings.Name}}" --output="${{env.Artifacts}}/da3-${{matrix.Settings.Name}}.onnx"
 
     - name: Upload artifacts
